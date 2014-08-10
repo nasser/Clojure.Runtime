@@ -148,7 +148,7 @@
     <Compile Include="CljCompiler\Ast\MethodParamExpr.cs" />
     <Compile Include="CljCompiler\Ast\NewInstanceExpr.cs" />
     <Compile Include="CljCompiler\Ast\NewInstanceMethod.cs" />
-    <Compile Include="CljCompiler\Ast\OtherNewInstanceExpr.cs" />
+    <Compile Include="CljCompiler\Ast\NewScriptInstanceExpr.cs" />
     <Compile Include="CljCompiler\Ast\NumberExpr.cs" />
     <Compile Include="Runtime\Binding\ClojureBinder.cs" />
     <Compile Include="CljCompiler\Ast\ObjExpr.cs" />

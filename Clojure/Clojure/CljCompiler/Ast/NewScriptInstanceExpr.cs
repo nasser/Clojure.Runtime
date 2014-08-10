@@ -21,7 +21,7 @@ using Microsoft.Scripting.Generation;
 
 namespace clojure.lang.CljCompiler.Ast
 {
-    sealed class OtherNewInstanceExpr : ObjExpr
+    sealed class NewScriptInstanceExpr : ObjExpr
     {
         #region Data
 
@@ -31,7 +31,7 @@ namespace clojure.lang.CljCompiler.Ast
 
         #region C-tors
 
-        public OtherNewInstanceExpr(object tag)
+        public NewScriptInstanceExpr(object tag)
             : base(tag)
         {
         }
@@ -40,7 +40,7 @@ namespace clojure.lang.CljCompiler.Ast
 
         #region Parsing
         
-        public sealed class OtherDefTypeParser : IParser
+        public sealed class DefscriptParser : IParser
         {
             public Expr Parse(ParserContext pcon, object frm)
             {
@@ -109,7 +109,7 @@ namespace clojure.lang.CljCompiler.Ast
             ISeq methodForms,
             Object frm)
         {
-            OtherNewInstanceExpr ret = new OtherNewInstanceExpr(null);
+            NewScriptInstanceExpr ret = new NewScriptInstanceExpr(null);
             ret._src = frm;
             ret._name = className.ToString();
             ret._classMeta = GenInterface.ExtractAttributes(RT.meta(className));
@@ -261,7 +261,7 @@ namespace clojure.lang.CljCompiler.Ast
          */
 
         // TODO: Preparse method heads to pick up signatures, implement those methods as abstract or as NotImpelmented so that Reflection can pick up calls during compilation and avoide a callsite.
-        static Type CompileStub(GenContext context, Type super, OtherNewInstanceExpr ret, Type[] interfaces, Object frm)
+        static Type CompileStub(GenContext context, Type super, NewScriptInstanceExpr ret, Type[] interfaces, Object frm)
         {
             TypeBuilder tb = context.ModuleBuilder.DefineType(Compiler.CompileStubPrefix + "." + ret.InternalName + RT.nextID(), TypeAttributes.Public | TypeAttributes.Abstract, super, interfaces);
 
