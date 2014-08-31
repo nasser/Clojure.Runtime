@@ -21,7 +21,7 @@ using Microsoft.Scripting.Generation;
 
 namespace clojure.lang.CljCompiler.Ast
 {
-    sealed class NewScriptInstanceExpr : ObjExpr
+    sealed class NewClassInstanceExpr : ObjExpr
     {
         #region Data
 
@@ -31,7 +31,7 @@ namespace clojure.lang.CljCompiler.Ast
 
         #region C-tors
 
-        public NewScriptInstanceExpr(object tag)
+        public NewClassInstanceExpr(object tag)
             : base(tag)
         {
         }
@@ -40,7 +40,7 @@ namespace clojure.lang.CljCompiler.Ast
 
         #region Parsing
         
-        public sealed class DefscriptParser : IParser
+        public sealed class DefclassParser : IParser
         {
             public Expr Parse(ParserContext pcon, object frm)
             {
@@ -53,6 +53,10 @@ namespace clojure.lang.CljCompiler.Ast
                 rform = rform.next();
                 Symbol classname = (Symbol)rform.first();
                 rform = rform.next();
+                string extends = ((Symbol)rform.first()).ToString();
+                rform = rform.next();
+                string assemblyname = ((Symbol)rform.first()).ToString();
+                rform = rform.next();
                 IPersistentVector fields = (IPersistentVector)rform.first();
                 rform = rform.next();
                 IPersistentMap opts = PersistentHashMap.EMPTY;
@@ -62,54 +66,69 @@ namespace clojure.lang.CljCompiler.Ast
                     rform = rform.next().next();
                 }
 
-                ObjExpr ret = Build((IPersistentVector)RT.get(opts, Compiler.ImplementsKeyword, PersistentVector.EMPTY), fields, null, tagname, classname,
-                             (Symbol)RT.get(opts, RT.TagKey), rform, frm);
+                ObjExpr ret = 
+                    Build(
+                        (IPersistentVector)RT.get(
+                            opts, 
+                            Compiler.ImplementsKeyword, 
+                            PersistentVector.EMPTY), 
+                        fields,
+                        null,
+                        tagname, 
+                        classname,
+                        extends,
+                        assemblyname,
+                        (Symbol)RT.get(opts, RT.TagKey), 
+                        rform,
+                        frm);
 
                 return ret;
             }
         }
 
-
-        public sealed class ReifyParser : IParser
-        {
-            public Expr Parse(ParserContext pcon, object frm)
-            {
-                // frm is:  (reify this-name? [interfaces] (method-name [args] body)* )
-                ISeq form = (ISeq)frm;
-                ObjMethod enclosingMethod = (ObjMethod)Compiler.MethodVar.deref();
-                string baseName = enclosingMethod != null
-                    ? (ObjExpr.TrimGenId(enclosingMethod.Objx.Name) + "$")
-                    : (Compiler.munge(Compiler.CurrentNamespace.Name.Name) + "$");
-                string simpleName = "reify__" + RT.nextID();
-                string className = baseName + simpleName;
-
-                ISeq rform = RT.next(form);
-
-                IPersistentVector interfaces = ((IPersistentVector)RT.first(rform)).cons(Symbol.intern("clojure.lang.IObj"));
-
-                rform = RT.next(rform);
-
-                ObjExpr ret = Build(interfaces, null, null, className, Symbol.intern(className), null, rform,frm);
-                IObj iobj = frm as IObj;
-
-                if (iobj != null && iobj.meta() != null)
-                    return new MetaExpr(ret, MapExpr.Parse(pcon.EvalOrExpr(),iobj.meta()));
-                else
-                    return ret;
-            }
-        }
+//
+//        public sealed class ReifyParser : IParser
+//        {
+//            public Expr Parse(ParserContext pcon, object frm)
+//            {
+//                // frm is:  (reify this-name? [interfaces] (method-name [args] body)* )
+//                ISeq form = (ISeq)frm;
+//                ObjMethod enclosingMethod = (ObjMethod)Compiler.MethodVar.deref();
+//                string baseName = enclosingMethod != null
+//                    ? (ObjExpr.TrimGenId(enclosingMethod.Objx.Name) + "$")
+//                    : (Compiler.munge(Compiler.CurrentNamespace.Name.Name) + "$");
+//                string simpleName = "reify__" + RT.nextID();
+//                string className = baseName + simpleName;
+//
+//                ISeq rform = RT.next(form);
+//
+//                IPersistentVector interfaces = ((IPersistentVector)RT.first(rform)).cons(Symbol.intern("clojure.lang.IObj"));
+//
+//                rform = RT.next(rform);
+//
+//                ObjExpr ret = Build(interfaces, null, null, className, Symbol.intern(className), null, rform,frm);
+//                IObj iobj = frm as IObj;
+//
+//                if (iobj != null && iobj.meta() != null)
+//                    return new MetaExpr(ret, MapExpr.Parse(pcon.EvalOrExpr(),iobj.meta()));
+//                else
+//                    return ret;
+//            }
+//        }
 
         internal static ObjExpr Build(
             IPersistentVector interfaceSyms, 
             IPersistentVector fieldSyms, 
             Symbol thisSym,
             string tagName, 
-            Symbol className, 
+            Symbol className,
+            string extends,
+            string assemblyname,
             Symbol typeTag, 
             ISeq methodForms,
             Object frm)
         {
-            NewScriptInstanceExpr ret = new NewScriptInstanceExpr(null);
+            NewClassInstanceExpr ret = new NewClassInstanceExpr(null);
             ret._src = frm;
             ret._name = className.ToString();
             ret._classMeta = GenInterface.ExtractAttributes(RT.meta(className));
@@ -152,7 +171,7 @@ namespace clojure.lang.CljCompiler.Ast
             }
             // Type superClass = typeof(Object);
             // here begins the jank
-            System.Type superClass = Type.GetType("UnityEngine.MonoBehaviour, UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
+            System.Type superClass = Type.GetType(extends + ", " + assemblyname);
 
 
             Dictionary<IPersistentVector, List<MethodInfo>> overrideables;
@@ -261,7 +280,7 @@ namespace clojure.lang.CljCompiler.Ast
          */
 
         // TODO: Preparse method heads to pick up signatures, implement those methods as abstract or as NotImpelmented so that Reflection can pick up calls during compilation and avoide a callsite.
-        static Type CompileStub(GenContext context, Type super, NewScriptInstanceExpr ret, Type[] interfaces, Object frm)
+        static Type CompileStub(GenContext context, Type super, NewClassInstanceExpr ret, Type[] interfaces, Object frm)
         {
             TypeBuilder tb = context.ModuleBuilder.DefineType(Compiler.CompileStubPrefix + "." + ret.InternalName + RT.nextID(), TypeAttributes.Public | TypeAttributes.Abstract, super, interfaces);
 

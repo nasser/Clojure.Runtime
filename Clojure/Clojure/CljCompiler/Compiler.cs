@@ -59,7 +59,7 @@ namespace clojure.lang
         public static readonly Symbol MonitorExitSym = Symbol.intern("monitor-exit");
         public static readonly Symbol ImportSym = Symbol.intern("clojure.core","import*");
         public static readonly Symbol DeftypeSym = Symbol.intern("deftype*");
-        public static readonly Symbol DefscriptSym = Symbol.intern("defscript*");
+        public static readonly Symbol DefclassSym = Symbol.intern("defclass*");
         public static readonly Symbol CaseSym = Symbol.intern("case*");
         public static readonly Symbol NewSym = Symbol.intern("new");
         public static readonly Symbol ThisSym = Symbol.intern("this");
@@ -214,7 +214,7 @@ namespace clojure.lang
             DotSym, new HostExpr.Parser(),
             AssignSym, new AssignExpr.Parser(),
             DeftypeSym, new NewInstanceExpr.DefTypeParser(),
-            DefscriptSym, new NewScriptInstanceExpr.DefscriptParser(),
+            DefclassSym, new NewClassInstanceExpr.DefclassParser(),
             ReifySym, new NewInstanceExpr.ReifyParser(),
             TrySym, new TryExpr.Parser(),
             ThrowSym, new ThrowExpr.Parser(),
