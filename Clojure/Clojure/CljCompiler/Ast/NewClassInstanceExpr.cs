@@ -21,6 +21,7 @@ using Microsoft.Scripting.Generation;
 
 namespace clojure.lang.CljCompiler.Ast
 {
+    // Copied and modified from NewInstanceExpr to support the defclass* special form
     sealed class NewClassInstanceExpr : ObjExpr
     {
         #region Data
