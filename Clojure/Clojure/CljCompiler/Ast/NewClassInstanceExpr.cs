@@ -190,8 +190,7 @@ namespace clojure.lang.CljCompiler.Ast
 
             GenContext genC = context.WithNewDynInitHelper(ret.InternalName + "__dynInitHelper_" + RT.nextID().ToString());
 
-            Type stub = CompileStub(genC, superClass, ret, SeqToTypeArray(interfaces), frm);
-            Symbol thisTag = Symbol.intern(null, stub.FullName);
+            Symbol thisTag = Symbol.intern(null, superClass.FullName);;
             //Symbol stubTag = Symbol.intern(null,stub.FullName);
             //Symbol thisTag = Symbol.intern(null, tagName);
 
@@ -218,7 +217,7 @@ namespace clojure.lang.CljCompiler.Ast
                             Compiler.MethodVar, null,
                             Compiler.LocalEnvVar, ret.Fields,
                             Compiler.CompileStubSymVar, Symbol.intern(null, tagName),
-                            Compiler.CompileStubClassVar, stub
+                            Compiler.CompileStubClassVar, superClass
                             ));
                     ret._hintedFields = RT.subvec(fieldSyms, 0, fieldSyms.count() - ret._altCtorDrops);
                 }
@@ -253,7 +252,7 @@ namespace clojure.lang.CljCompiler.Ast
             // Might be able to flag stub classes and not try to convert, leading to a dynsite.
 
             //if (RT.CompileDLR)
-            ret.Compile(stub, stub, interfaces, false, genC);
+            ret.Compile(superClass, superClass, interfaces, false, genC);
             //else
             //    ret.CompileNoDlr(stub, stub, interfaces, false, genC);
 
@@ -270,77 +269,6 @@ namespace clojure.lang.CljCompiler.Ast
 
             return types;
         }
-
-        /***
-         * Current host interop uses reflection, which requires pre-existing classes
-         * Work around this by:
-         * Generate a stub class that has the same interfaces and fields as the class we are generating.
-         * Use it as a type hint for this, and bind the simple name of the class to this stub (in resolve etc)
-         * Unmunge the name (using a magic prefix) on any code gen for classes
-         */
-
-        // TODO: Preparse method heads to pick up signatures, implement those methods as abstract or as NotImpelmented so that Reflection can pick up calls during compilation and avoide a callsite.
-        static Type CompileStub(GenContext context, Type super, NewClassInstanceExpr ret, Type[] interfaces, Object frm)
-        {
-            TypeBuilder tb = context.ModuleBuilder.DefineType(Compiler.CompileStubPrefix + "." + ret.InternalName + RT.nextID(), TypeAttributes.Public | TypeAttributes.Abstract, super, interfaces);
-
-            tb.DefineDefaultConstructor(MethodAttributes.Public);
-
-            // instance fields for closed-overs
-            for (ISeq s = RT.keys(ret.Closes); s != null; s = s.next())
-            {
-                LocalBinding lb = (LocalBinding)s.first();
-                FieldAttributes access = FieldAttributes.Public;
-
-                if (!ret.IsMutable(lb))
-                    access |= FieldAttributes.InitOnly;
-
-                Type fieldType = lb.PrimitiveType ?? typeof(Object);
-
-                if (ret.IsVolatile(lb))
-                   tb.DefineField(lb.Name, fieldType, new Type[] { typeof(IsVolatile) }, Type.EmptyTypes, access);
-                else
-                    tb.DefineField(lb.Name, fieldType, access);
-            }
-
-            // ctor that takes closed-overs and does nothing
-            if (ret.CtorTypes().Length > 0)
-            {
-                ConstructorBuilder cb = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, ret.CtorTypes());
-                CljILGen ilg = new CljILGen(cb.GetILGenerator());
-                ilg.EmitLoadArg(0);
-                ilg.Emit(OpCodes.Call, super.GetConstructor(Type.EmptyTypes));
-                ilg.Emit(OpCodes.Ret);
-
-
-                if (ret._altCtorDrops > 0)
-                {
-                    Type[] ctorTypes = ret.CtorTypes();
-                    int newLen = ctorTypes.Length - ret._altCtorDrops;
-                    if (newLen > 0)
-                    {
-                        Type[] altCtorTypes = new Type[newLen];
-                        for (int i = 0; i < altCtorTypes.Length; i++)
-                            altCtorTypes[i] = ctorTypes[i];
-                        ConstructorBuilder cb2 = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, altCtorTypes);
-                        CljILGen ilg2 = new CljILGen(cb2.GetILGenerator());
-                        ilg2.EmitLoadArg(0);
-                        for (int i = 0; i < newLen; i++)
-                            ilg2.EmitLoadArg(i + 1);
-                        for (int i = 0; i < ret._altCtorDrops; i++)
-                            ilg2.EmitNull();
-                        ilg2.Emit(OpCodes.Call, cb);
-                        ilg2.Emit(OpCodes.Ret);
-                    }
-                }
-            }
-
-            Type t = tb.CreateType();
-            //Compiler.RegisterDuplicateType(t);
-            return t;
-        }
-
-
  
         static string[] InterfaceNames(IPersistentVector interfaces)
         {
