@@ -42,6 +42,13 @@ namespace clojure.lang.CljCompiler.Ast
                 RT.errPrintWriter().WriteLine("Boxed math warning, {0}:{1}:{2} - call {3}.",
                     Compiler.SourcePathVar.deref(), Compiler.GetLineFromSpanMap(spanMap), Compiler.GetColumnFromSpanMap(spanMap), _method.ToString());
             }
+
+			if (_method == null)
+				Compiler.RegisterInlineCache (
+					methodName,
+					typeof(object),
+					args.Map(a => (a.ArgExpr.HasClrType ? a.ArgExpr.ClrType : typeof(object))));
+
         }
 
         public static bool IsBoxedMath(MethodInfo m)

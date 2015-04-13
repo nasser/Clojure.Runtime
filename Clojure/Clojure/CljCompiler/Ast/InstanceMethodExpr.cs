@@ -37,6 +37,12 @@ namespace clojure.lang.CljCompiler.Ast
                 throw new ArgumentException(String.Format("Attempt to call instance method {0} on nil", methodName));
 
             _method = Reflector.GetMatchingMethod(spanMap, target, _args, _methodName, _typeArgs);
+
+			if (_method == null)
+				Compiler.RegisterInlineCache (
+					methodName,
+					typeof(object),
+					args.Map(a => (a.ArgExpr.HasClrType ? a.ArgExpr.ClrType : typeof(object))));
         }
 
         #endregion

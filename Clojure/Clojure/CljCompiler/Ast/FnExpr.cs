@@ -145,6 +145,7 @@ namespace clojure.lang.CljCompiler.Ast
                 {
                     Var.pushThreadBindings(RT.mapUniqueKeys(
                         Compiler.ConstantsVar, PersistentVector.EMPTY,
+						Compiler.InlineCachesVar, PersistentVector.EMPTY,
                         Compiler.ConstantIdsVar, new IdentityHashMap(),
                         Compiler.KeywordsVar, PersistentHashMap.EMPTY,
                         Compiler.VarsVar, PersistentHashMap.EMPTY,
@@ -189,6 +190,7 @@ namespace clojure.lang.CljCompiler.Ast
                     fn._variadicMethod = variadicMethod;
                     fn.Keywords = (IPersistentMap)Compiler.KeywordsVar.deref();
                     fn.Vars = (IPersistentMap)Compiler.VarsVar.deref();
+					fn.InlineCaches = (IPersistentVector)Compiler.InlineCachesVar.deref();
                     fn.Constants = (PersistentVector)Compiler.ConstantsVar.deref();
                     fn.KeywordCallsites = (IPersistentVector)Compiler.KeywordCallsitesVar.deref();
                     fn.ProtocolCallsites = (IPersistentVector)Compiler.ProtocolCallsitesVar.deref();

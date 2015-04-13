@@ -147,13 +147,13 @@ namespace clojure.lang.CljCompiler.Ast
             Type delType;
             MethodBuilder mbLambda;
 
-            MethodExpr.EmitDynamicCallPreamble(dyn, _spanMap, "__interop_" + _memberName + RT.nextID(), returnType, paramExprs, paramTypes.ToArray(), ilg, out lambda, out delType, out mbLambda);
+            // MethodExpr.EmitDynamicCallPreamble(dyn, _spanMap, "__interop_" + _memberName + RT.nextID(), returnType, paramExprs, paramTypes.ToArray(), ilg, out lambda, out delType, out mbLambda);
 
             //  Emit target + args (no args, actually)
 
             _target.Emit(RHC.Expression, objx, ilg);
 
-            MethodExpr.EmitDynamicCallPostlude(lambda, delType, mbLambda, ilg);
+            // MethodExpr.EmitDynamicCallPostlude(lambda, delType, mbLambda, ilg);
  
         }
 

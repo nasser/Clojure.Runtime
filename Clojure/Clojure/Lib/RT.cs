@@ -3349,10 +3349,14 @@ namespace clojure.lang
 
                 if (cljInfo != null)
                 {
-                    if (booleanCast(Compiler.CompileFilesVar.deref()))
+                    if (booleanCast(Compiler.CompileFilesVar.deref())) {
+                        Console.WriteLine("Compiling " + cljname);
                         Compile(cljInfo, cljname);
-                    else
+                    }
+                    else {
+                        Console.WriteLine("Loading " + cljname);
                         LoadScript(cljInfo, cljname);
+                    }
                     return;
                 }
             }

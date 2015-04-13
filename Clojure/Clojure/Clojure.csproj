@@ -350,6 +350,7 @@
     <Compile Include="Runtime\Printf.cs" />
     <Compile Include="Runtime\Properties.cs" />
     <Compile Include="Runtime\Reflector.cs" />
+    <Compile Include="Runtime\InlineCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

@@ -202,6 +202,7 @@ namespace clojure.lang.CljCompiler.Ast
                 Var.pushThreadBindings(
                     RT.mapUniqueKeys(
                         Compiler.ConstantsVar, PersistentVector.EMPTY,
+						Compiler.InlineCachesVar, PersistentVector.EMPTY,
                         Compiler.ConstantIdsVar, new IdentityHashMap(),
                         Compiler.KeywordsVar, PersistentHashMap.EMPTY,
                         Compiler.VarsVar, PersistentHashMap.EMPTY,
@@ -237,6 +238,7 @@ namespace clojure.lang.CljCompiler.Ast
                 ret._methods = methods;
                 ret.Keywords = (IPersistentMap)Compiler.KeywordsVar.deref();
                 ret.Vars = (IPersistentMap)Compiler.VarsVar.deref();
+				ret.InlineCaches = (IPersistentVector)Compiler.InlineCachesVar.deref();
                 ret.Constants = (PersistentVector)Compiler.ConstantsVar.deref();
                 ret._constantsID = RT.nextID();
                 ret.KeywordCallsites = (IPersistentVector)Compiler.KeywordCallsitesVar.deref();

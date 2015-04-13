@@ -87,7 +87,7 @@ namespace clojure.lang.CljCompiler.Ast
             if (targetType != null && _tinfo != null)
             {
                 _target.Emit(RHC.Expression, objx, ilg);
-                MethodExpr.EmitPrepForCall(ilg, typeof(object), FieldDeclaringType);
+                // MethodExpr.EmitPrepForCall(ilg, typeof(object), FieldDeclaringType);
                 EmitGet(ilg);
                 HostExpr.EmitBoxReturn(objx, ilg, FieldType);
             }
@@ -112,7 +112,7 @@ namespace clojure.lang.CljCompiler.Ast
             if (targetType != null && _tinfo != null)
             {
                 _target.Emit(RHC.Expression, objx, ilg);
-                MethodExpr.EmitPrepForCall(ilg, typeof(object), FieldDeclaringType);
+                // MethodExpr.EmitPrepForCall(ilg, typeof(object), FieldDeclaringType);
                 EmitGet(ilg);
             }
             else

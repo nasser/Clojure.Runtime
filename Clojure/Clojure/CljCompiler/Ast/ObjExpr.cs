@@ -40,7 +40,9 @@ namespace clojure.lang.CljCompiler.Ast
         public IPersistentMap Keywords { get; set; }
         public IPersistentMap Vars { get; set; }
         public IPersistentVector Constants { get; set; }
+		public IPersistentVector InlineCaches { get; set; }
 
+		public Dictionary<string, FieldBuilder> InlineCacheFields { get; set;} 
         Dictionary<int, FieldBuilder> ConstantFields { get; set;} 
         protected IPersistentMap Fields { get; set; }            // symbol -> lb
 
@@ -344,6 +346,7 @@ namespace clojure.lang.CljCompiler.Ast
                         //Compiler.COMPILE_STUB_CLASS, _baseType));
                     }
                     EmitConstantFieldDefs(_typeBuilder);
+					EmitInlineCacheDefs(_typeBuilder);
                     EmitKeywordCallsiteDefs(_typeBuilder);
 
                     DefineStaticConstructor(_typeBuilder);
@@ -441,8 +444,11 @@ namespace clojure.lang.CljCompiler.Ast
             if(IsDefType)
                 EmitRequireNamespace(ilg);
 
-            if (Constants.count() > 0)
-                EmitConstantFieldInits(ilg);
+			if (Constants.count() > 0)
+				EmitConstantFieldInits(ilg);
+			
+			if (InlineCaches.count() > 0)
+				EmitInlineCacheInits(ilg);
 
             if (KeywordCallsites.count() > 0)
                 EmitKeywordCallsiteInits(ilg);
@@ -480,6 +486,28 @@ namespace clojure.lang.CljCompiler.Ast
                 ilg.Emit(OpCodes.Stsfld, tfb);
             }
         }
+			
+		private void EmitInlineCacheInits(CljILGen ilg)
+		{
+			try
+			{
+				Var.pushThreadBindings(RT.map(RT.PrintDupVar, true));
+
+				for (int i = 0; i < InlineCaches.count(); i++)
+				{
+					IPersistentMap entry = (IPersistentMap)InlineCaches.nth (i);
+					ilg.EmitString((string) entry.valAt("methodName"));
+					ilg.EmitArray<object> ((object[]) entry.valAt("paramTypes"));
+					ilg.EmitNew(Compiler.Ctor_InlineCache);
+					FieldBuilder fb = InlineCacheFields[(string) entry.valAt("methodName")];
+					ilg.Emit(OpCodes.Stsfld, fb);
+				}
+			}
+			finally
+			{
+				Var.popThreadBindings();
+			}
+		}
 
         private void EmitConstantFieldInits(CljILGen ilg)
         {
@@ -707,6 +735,22 @@ namespace clojure.lang.CljCompiler.Ast
         protected virtual void EmitStatics(TypeBuilder tb)
         {
         }
+
+		public void EmitInlineCacheDefs(TypeBuilder baseTB)
+		{
+			if (InlineCacheFields == null)
+				InlineCacheFields = new Dictionary<string, FieldBuilder> (InlineCaches.count());
+
+			for (int i = 0; i < InlineCaches.count(); i++)
+			{
+				
+				IPersistentMap entry = (IPersistentMap)InlineCaches.nth (i);
+				string fieldName = "__inline_cache_" + entry.valAt ("methodName");
+				Type fieldType = typeof(InlineCache);
+				FieldBuilder fb = baseTB.DefineField(fieldName, fieldType, FieldAttributes.FamORAssem | FieldAttributes.Static); // is static ok? -nasser
+				InlineCacheFields[(string) entry.valAt ("methodName")] = fb;
+			}
+		}
 
         public void EmitConstantFieldDefs(TypeBuilder baseTB)
         {

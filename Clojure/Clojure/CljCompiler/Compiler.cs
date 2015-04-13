@@ -182,6 +182,7 @@ namespace clojure.lang
         internal static readonly Var ConstantsVar = Var.create().setDynamic();      //vector<object>
         internal static readonly Var ConstantIdsVar = Var.create().setDynamic();   // IdentityHashMap
         internal static readonly Var KeywordsVar = Var.create().setDynamic();       //keyword->constid
+		internal static readonly Var InlineCachesVar = Var.create().setDynamic();      //vector<object>
 
         internal static readonly Var KeywordCallsitesVar = Var.create().setDynamic();  // vector<keyword>
         internal static readonly Var ProtocolCallsitesVar = Var.create().setDynamic(); // vector<var>
@@ -336,7 +337,10 @@ namespace clojure.lang
         internal static readonly MethodInfo Method_Var_getRawRoot = typeof(Var).GetMethod("getRawRoot");
         internal static readonly MethodInfo Method_Var_setDynamic0 = typeof(Var).GetMethod("setDynamic", Type.EmptyTypes);
 
+		internal static readonly MethodInfo Method_InlineCache_Invoke = typeof(InlineCache).GetMethod("Invoke", new Type[] { typeof(object), typeof(object[]) });
+
         internal static readonly ConstructorInfo Ctor_KeywordLookupSite_1 = typeof(KeywordLookupSite).GetConstructor(new Type[] { typeof(Keyword) });
+		internal static readonly ConstructorInfo Ctor_InlineCache = typeof(InlineCache).GetConstructor(new Type[] { typeof(string), typeof(Type[]) });
         internal static readonly ConstructorInfo Ctor_Regex_1 = typeof(Regex).GetConstructor(new Type[] { typeof(String) });
 
         internal static readonly ConstructorInfo Ctor_Serializable = typeof(SerializableAttribute).GetConstructor(Type.EmptyTypes);
@@ -454,6 +458,7 @@ namespace clojure.lang
 
         private static object ResolveIn(Namespace n, Symbol symbol, bool allowPrivate)
         {
+            // Console.WriteLine("ResolveIn: " + n + ", " + symbol);
             // note: ns-qualified vars must already exist
             if (symbol.Namespace != null)
             {
@@ -480,6 +485,9 @@ namespace clojure.lang
                     return CompileStubClassVar.get();
 
                 object o = n.GetMapping(symbol);
+                if(o == null)
+                    o = RT.ClojureNamespace.GetMapping(symbol); // HACK *warn-on-reflection* in protocols is freaking out otherwise...?!
+
                 if (o == null)
                 {
                     if (RT.booleanCast(RT.AllowUnresolvedVarsVar.deref()))
@@ -583,6 +591,15 @@ namespace clojure.lang
             return LookupVar(sym, internNew, true);
         }
 
+		internal static int RegisterInlineCache(string methodName, Type returnType, Type[] paramTypes)
+		{
+			if (!InlineCachesVar.isBound)
+				return -1;
+			PersistentVector ics = (PersistentVector)InlineCachesVar.deref();
+			PersistentHashMap hm = PersistentHashMap.create (null, "methodName", methodName, "returnType", returnType, "paramTypes", paramTypes);
+			InlineCachesVar.set(RT.conj(ics, hm));
+			return ics.count();
+		}
 
         internal static int RegisterConstant(Object o)
         {
@@ -991,6 +1008,7 @@ namespace clojure.lang
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "eval")]
         public static object eval(object form)
         {
+            Console.WriteLine("eval " + form);
             object line = LineVarDeref();
             if (RT.meta(form) != null && RT.meta(form).containsKey(RT.LineKey))
                 line = RT.meta(form).valAt(RT.LineKey);
@@ -1067,12 +1085,14 @@ namespace clojure.lang
         private static object MacroexpandSeq1(ISeq form)
         {
             object op = RT.first(form);
+            Console.WriteLine("first " + op);
 
             if (IsSpecial(op))
                 return form;
 
             // macro expansion
             Var v = IsMacro(op);
+            Console.WriteLine("IsMacro " + v);
             if (v != null)
             {
                 try
@@ -1430,6 +1450,7 @@ namespace clojure.lang
                 RT.ReadEvalVar, true /* RT.T */,
                 RT.CurrentNSVar, RT.CurrentNSVar.deref(),
                 ConstantsVar, PersistentVector.EMPTY,
+				InlineCachesVar, PersistentVector.EMPTY,
                 ConstantIdsVar, new IdentityHashMap(),
                 KeywordsVar, PersistentHashMap.EMPTY,
                 VarsVar, PersistentHashMap.EMPTY,
@@ -1513,11 +1534,16 @@ namespace clojure.lang
                 }
                 else
                 {
+					Console.WriteLine ("### Compiling " + form);
+					Console.WriteLine("InlineCachesVar: "  + ((PersistentVector)InlineCachesVar.deref()).count());
+
                     Expr expr = Analyze(evPC, form);
                     objx.Keywords = (IPersistentMap)KeywordsVar.deref();
                     objx.Vars = (IPersistentMap)VarsVar.deref();
                     objx.Constants = (PersistentVector)ConstantsVar.deref();
+					objx.InlineCaches = (PersistentVector)InlineCachesVar.deref();
                     objx.EmitConstantFieldDefs(tb);
+					objx.EmitInlineCacheDefs(tb);
                     expr.Emit(RHC.Expression,objx,ilg);
                     ilg.Emit(OpCodes.Pop);
                     expr.Eval();
@@ -1817,10 +1843,12 @@ namespace clojure.lang
 
         private static Expr AnalyzeSymbol(Symbol symbol)
         {
+            Console.WriteLine("### AnalyzeSymbol " + symbol);
             Symbol tag = TagOf(symbol);
 
             if (symbol.Namespace == null) // ns-qualified syms are always Vars
             {
+                Console.WriteLine("### ???");
                 LocalBinding b = ReferenceLocal(symbol);
                 if (b != null)
                     return new LocalBindingExpr(b, tag);

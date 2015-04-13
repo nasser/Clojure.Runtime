@@ -567,19 +567,19 @@ namespace clojure.lang
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly")]
-        static long unsignedShiftRight(Object x, Object y)
+        static long unsignedShiftRight(object x, object y)
         {
             return unsignedShiftRight(bitOpsCast(x), bitOpsCast(y));
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly")]
-        public static long unsignedShiftRight(Object x, long y)
+        public static long unsignedShiftRight(object x, long y)
         {
             return unsignedShiftRight(bitOpsCast(x), y);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly")]
-        public static long unsignedShiftRight(long x, Object y)
+        public static long unsignedShiftRight(long x, object y)
         {
             return unsignedShiftRight(x, bitOpsCast(y));
         }
@@ -2566,6 +2566,20 @@ namespace clojure.lang
 
         #region Bit ops
 
+        #region not
+        
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "not")]
+        static public long not(object x){
+            return not(bitOpsCast(x));
+        }
+        
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "not")]
+        static public long not(long x){
+            return ~x;
+        }
+        
+        #endregion
+        
         #region and
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "and")]

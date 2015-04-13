@@ -269,6 +269,7 @@ namespace clojure.lang
         /// <returns>The value that is associated. (only guaranteed == to the value given).</returns>
         object reference(Symbol sym, object val)
         {
+			Console.WriteLine ("reference " + this.Name + " " + sym + " " + val);
             if ( sym.Namespace != null )
                 throw new ArgumentException("Can't intern a namespace-qualified symbol");
 
