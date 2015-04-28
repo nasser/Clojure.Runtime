@@ -308,6 +308,7 @@ namespace clojure.lang.CljCompiler.Ast
 
         public Type Compile(Type superType, Type stubType, IPersistentVector interfaces, bool onetimeUse, GenContext context)
         {
+            Console.WriteLine("### Compiling " + _name + ":" + InternalName);
             if (_compiledType != null)
                 return _compiledType;
 

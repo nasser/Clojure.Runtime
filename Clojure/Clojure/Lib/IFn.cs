@@ -123,6 +123,135 @@ namespace clojure.lang
 
         #endregion
     }
+    
+    namespace genericifs
+    {
+        public interface IFn<Z>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim();
+        }
+        
+        public interface IFn<Z, A>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a);
+        }
+
+        public interface IFn<Z, A, B>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b);
+        }
+
+        public interface IFn<Z, A, B, C>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c);
+        }
+
+        public interface IFn<Z, A, B, C, D>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d);
+        }
+
+        public interface IFn<Z, A, B, C, D, E>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d, E e);
+        }
+
+        public interface IFn<Z, A, B, C, D, E, F>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d, E e, F f);
+        }
+
+        public interface IFn<Z, A, B, C, D, E, F, G>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d, E e, F f, G g);
+        }
+
+        public interface IFn<Z, A, B, C, D, E, F, G, H>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d, E e, F f, G g, H h);
+        }
+
+        public interface IFn<Z, A, B, C, D, E, F, G, H, I>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d, E e, F f, G g, H h, I i);
+        }
+
+        public interface IFn<Z, A, B, C, D, E, F, G, H, I, J>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j);
+        }
+
+        public interface IFn<Z, A, B, C, D, E, F, G, H, I, J, K>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k);
+        }
+
+        public interface IFn<Z, A, B, C, D, E, F, G, H, I, J, K, L>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l);
+        }
+
+        public interface IFn<Z, A, B, C, D, E, F, G, H, I, J, K, L, M>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m);
+        }
+
+        public interface IFn<Z, A, B, C, D, E, F, G, H, I, J, K, L, M, N>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N n);
+        }
+
+        public interface IFn<Z, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N n, O o);
+        }
+
+        public interface IFn<Z, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N n, O o, P p);
+        }
+
+        public interface IFn<Z, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N n, O o, P p, Q q);
+        }
+
+        public interface IFn<Z, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N n, O o, P p, Q q, R r);
+        }
+
+        public interface IFn<Z, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N n, O o, P p, Q q, R r, S s);
+        }
+
+        public interface IFn<Z, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T>
+        {
+            [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "invoke")]
+            Z invokePrim(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N n, O o, P p, Q q, R r, S s, T t);
+        }
+    }
 
     namespace primifs
     {

@@ -165,8 +165,8 @@ namespace clojure.lang.CljCompiler.Ast
                 //    method._prim = method._prim.Replace('.', '/');
 
                 method._retType = Compiler.TagType(Compiler.TagOf(parms));
-                if (method._retType.IsPrimitive && !(method._retType == typeof(double) || method._retType == typeof(long)))
-                    throw new ParseException("Only long and double primitives are supported");
+                // if (method._retType.IsPrimitive && !(method._retType == typeof(double) || method._retType == typeof(long)))
+                //     throw new ParseException("Only long and double primitives are supported");
 
                 // register 'this' as local 0  
                 if ( !isStatic )
@@ -198,10 +198,10 @@ namespace clojure.lang.CljCompiler.Ast
                     }
                     else
                     {
-                        Type pt = Compiler.PrimType(Compiler.TagType(Compiler.TagOf(p)));
+                        Type pt = Compiler.TagType(Compiler.TagType(Compiler.TagOf(p)));
 
-                        if (pt.IsPrimitive && !(pt == typeof(double) || pt == typeof(long)))
-                            throw new ParseException("Only long and double primitives are supported: " + p);
+                        // if (pt.IsPrimitive && !(pt == typeof(double) || pt == typeof(long)))
+                        //     throw new ParseException("Only long and double primitives are supported: " + p);
 
                         if (paramState == ParamParseState.Rest && Compiler.TagOf(p) != null)
                             throw new ParseException("& arg cannot have type hint");
@@ -270,6 +270,12 @@ namespace clojure.lang.CljCompiler.Ast
             throw new ArgumentException("Only long and double primitives are supported");
         }
 
+        public static bool IsHintedType(object x)
+        {
+            Type t = x as Type ?? Compiler.TagType(x as Symbol);
+            return t != typeof(object);
+        }
+        
         public static bool IsPrimType(object x)
         {
             Type t = x as Type ?? Compiler.PrimType(x as Symbol);
@@ -283,29 +289,32 @@ namespace clojure.lang.CljCompiler.Ast
 
         public static string PrimInterface(IPersistentVector arglist)
         {
+            bool prim = Compiler.TagType(Compiler.TagOf(arglist)) != typeof(object);
+            
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < arglist.count(); i++)
-                sb.Append(TypeChar(Compiler.TagOf(arglist.nth(i))));
-            sb.Append(TypeChar(Compiler.TagOf(arglist)));
+            sb.Append(Compiler.TagType(Compiler.TagOf(arglist)).FullName);
+            for (int i = 0; i < arglist.count(); i++) {
+                prim = prim || (Compiler.TagType(Compiler.TagOf(arglist.nth(i))) != typeof(object));
+                sb.Append(", " + Compiler.TagType(Compiler.TagOf(arglist.nth(i))).FullName);
+            }
             string ret = sb.ToString();
-            bool prim = ret.Contains("L") || ret.Contains("D");
-            if (prim && arglist.count() > 4)
-                throw new ArgumentException("fns taking primitives support only 4 or fewer args");
-            if (prim)
-                return "clojure.lang.primifs." + ret;
-            return null;
+            if (arglist.count() > 20)
+                throw new ArgumentException("fns taking primitives support only 20 or fewer args");
+            if(prim)
+                Console.WriteLine("clojure.lang.genericifs.IFn`" + (arglist.count() + 1) + "[" + ret + "], Clojure");
+            return prim ? "clojure.lang.genericifs.IFn`" + (arglist.count() + 1) + "[" + ret + "], Clojure" : null;
         }
 
         public static bool IsPrimInterface(IPersistentVector arglist)
         {
-            if (arglist.count() > 4)
-                return false;
+            // if (arglist.count() > 4)
+            //     return false;
 
             for (int i = 0; i < arglist.count(); i++)
-                if (IsPrimType(Compiler.TagOf(arglist.nth(i))))
+                if (IsHintedType(Compiler.TagOf(arglist.nth(i))))
                     return true;
 
-            if (IsPrimType(Compiler.TagOf(arglist)))
+            if (IsHintedType(Compiler.TagOf(arglist)))
                 return true;
 
             return false;
@@ -375,11 +384,7 @@ namespace clojure.lang.CljCompiler.Ast
 
             string methodName = isStatic ? "invokeStatic" : "invokePrim";
 
-            Type returnType;
-            if (_retType == typeof(double) || _retType == typeof(long))
-                returnType = GetReturnType();
-            else
-                returnType = typeof(object);
+            Type returnType = GetReturnType();
 
             MethodBuilder baseMB = tb.DefineMethod(methodName, attribs, returnType, _argTypes);
 

@@ -218,6 +218,10 @@
 (def ^{:private true :dynamic true}
   assert-valid-fdecl (fn [fdecl]))
 
+(Console/WriteLine "!!!")
+(Console/WriteLine (. clojure.lang.RT (seq [1 2 3])))
+(Console/WriteLine (seq [1 2 3]))
+
 (def
  ^{:private true}
  sigs

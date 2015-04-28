@@ -35,6 +35,7 @@ namespace clojure.lang.CljCompiler.Ast
         public StaticMethodExpr(string source, IPersistentMap spanMap, Symbol tag, Type type, string methodName, List<Type> typeArgs, List<HostArg> args)
             : base(source,spanMap,tag,methodName,typeArgs, args)
         {
+            Console.WriteLine("??? StaticMethodExpr " + type + " " + methodName);
             _type = type;
             _method  = Reflector.GetMatchingMethod(spanMap, _type, _args, _methodName, typeArgs);
             if ( _method != null && warnOnBoxedKeyword.Equals(RT.UncheckedMathVar.deref()) && IsBoxedMath(_method))

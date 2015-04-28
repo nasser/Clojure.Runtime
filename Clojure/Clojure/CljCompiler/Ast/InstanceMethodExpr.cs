@@ -31,6 +31,7 @@ namespace clojure.lang.CljCompiler.Ast
         public InstanceMethodExpr(string source, IPersistentMap spanMap, Symbol tag, Expr target, string methodName, List<Type> typeArgs, List<HostArg> args)
             : base(source,spanMap,tag,methodName,typeArgs,args)
         {
+            Console.WriteLine("??? InstanceMethodExpr " + target + " " + methodName);
             _target = target;
 
             if (target.HasClrType && target.ClrType == null)
